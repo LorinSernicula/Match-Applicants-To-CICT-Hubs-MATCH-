@@ -18,6 +18,11 @@ public class Applicant {
     private String firstName;
     private String middleInitial;
 
+    private double cictScore;
+
+    public double getCictScore() { return cictScore; }
+    public void setCictScore(double cictScore) { this.cictScore = cictScore; }
+
     private List<Program> eligiblePrograms;
     private EnumSet<Trait> traits;
 
