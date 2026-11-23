@@ -15,6 +15,7 @@ public enum Program {
 
     private final String fullName;
     private final int sectionCount;
+    
 
     /* onitializes each program's information */
     Program(String fullName, int sectionCount) {
