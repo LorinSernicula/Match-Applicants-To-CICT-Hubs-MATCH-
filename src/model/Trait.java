@@ -15,7 +15,7 @@ public enum Trait {
 
     PROBLEM_SOLVING("Problem Solving"),
     LIKES_PROGRAMMING("Likes Programming"),
-    ENJOYS_HARDWARE_NETWORKING("Enjoys Hardware/Networking"),
+    ENJOYS_HARDWARE_NETWORKING("Enjoys Hardware and Networking"),
     TECH_SUPPORT_MINDED("Tech Support Minded"),
     BUSINESS_MINDED("Business Minded"),
     EXPERIENCE_IN_3D_MODELING("Experience in 3D Modeling"),

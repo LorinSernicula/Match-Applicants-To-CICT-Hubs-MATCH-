@@ -5,59 +5,48 @@ package model;
  *
  * class stores basic program information only
  */
-public class Program {
+public enum Program {
 
-    private final String code;
-    private final String name;
+    BLIS("Bachelor of Library and Information Science", 1),
+    BSIS("Bachelor of Science in Information Systems", 1),
+    BSEMC("Bachelor of Science in Entertainment and Multimedia Computing", 1),
+    BSCS("Bachelor of Science in Computer Science", 2),
+    BSIT("Bachelor of Science in Information Technology", 2);
+
+    private final String fullName;
     private final int sectionCount;
 
-    public Program(String code, String name, int sectionCount) {
-        if (code == null || code.trim().isEmpty()) {
-            throw new IllegalArgumentException("Program code cannot be empty.");
-        }
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Program name cannot be empty.");
-        }
-        if (sectionCount < 0) {
-            throw new IllegalArgumentException("Section count cannot be negative.");
-        }
-
-        this.code = code.trim().toUpperCase();
-        this.name = name.trim();
+    /* onitializes each program's information */
+    Program(String fullName, int sectionCount) {
+        this.fullName = fullName;
         this.sectionCount = sectionCount;
     }
 
     public String getCode() {
-        return code;
+        return name();
     }
 
-    public String getName() {
-        return name;
+    public String getFullName() {
+        return fullName;
     }
 
     public int getSectionCount() {
         return sectionCount;
     }
 
+    /* calculates total no. of sections across all programs */
+    public static int getTotalSections() {
+        int total = 0;
+
+        for (Program program : values()) {
+            total += program.getSectionCount();
+        }
+
+        return total;
+    }
+
     @Override
     public String toString() {
-        return code;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
-        if (!(object instanceof Program)) {
-            return false;
-        }
-        Program other = (Program) object;
-        return code.equals(other.code);
-    }
-
-    @Override
-    public int hashCode() {
-        return code.hashCode();
+        return getCode();
     }
 }

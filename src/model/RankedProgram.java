@@ -10,16 +10,12 @@ package model;
 public class RankedProgram {
 
     private final Program program;
-    private final double corePriorityScore;
-    private final double traitAlignmentScore;
-    private final double totalScore;
+    private double corePriorityScore;
+    private double traitAlignmentScore;
+    private double totalScore;
 
     public RankedProgram(Program program, double corePriorityScore,
                          double traitAlignmentScore, double totalScore) {
-
-        if (program == null) {
-            throw new IllegalArgumentException("Program cannot be null.");
-        }
 
         this.program = program;
         this.corePriorityScore = corePriorityScore;
@@ -43,10 +39,15 @@ public class RankedProgram {
         return totalScore;
     }
 
-    @Override
-    public String toString() {
-        return program.getCode() + " - Total: " + totalScore
-                + " (Core: " + corePriorityScore
-                + ", Traits: " + traitAlignmentScore + ")";
+    public void setCorePriorityScore(double corePriorityScore) {
+        this.corePriorityScore = corePriorityScore;
+    }
+
+    public void setTraitAlignmentScore(double traitAlignmentScore) {
+        this.traitAlignmentScore = traitAlignmentScore;
+    }
+
+    public void setTotalScore(double totalScore) {
+        this.totalScore = totalScore;
     }
 }

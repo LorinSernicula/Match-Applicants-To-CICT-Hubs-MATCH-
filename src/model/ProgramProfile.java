@@ -1,6 +1,5 @@
 package model;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -12,31 +11,14 @@ import java.util.Set;
 public class ProgramProfile {
 
     private final Program program;
-    private final Set<Trait> coreTraits;
-    private final Set<Trait> alignedTraits;
-    private final double scoreThreshold;
-
-    /*
-     * capacity is the number of available student slots, not sections
-     * use -1 when the actual numerical capacity has not been configured
-     */
-    private final int capacity;
+    private EnumSet<Trait> coreTraits;
+    private EnumSet<Trait> alignedTraits;
+    private double scoreThreshold;
+    private int capacity;
 
     public ProgramProfile(Program program, Set<Trait> coreTraits,
                           Set<Trait> alignedTraits,
                           double scoreThreshold, int capacity) {
-
-        if (program == null) {
-            throw new IllegalArgumentException("Program cannot be null.");
-        }
-        if (scoreThreshold < 0.0 || scoreThreshold > 100.0) {
-            throw new IllegalArgumentException(
-                    "Score threshold must be between 0 and 100.");
-        }
-        if (capacity < -1) {
-            throw new IllegalArgumentException(
-                    "Capacity must be -1 (unknown) or a non-negative number.");
-        }
 
         this.program = program;
         this.coreTraits = copyTraits(coreTraits);
@@ -45,11 +27,14 @@ public class ProgramProfile {
         this.capacity = capacity;
     }
 
-    private Set<Trait> copyTraits(Set<Trait> source) {
-        if (source == null || source.isEmpty()) {
-            return EnumSet.noneOf(Trait.class);
+    private EnumSet<Trait> copyTraits(Set<Trait> traits) {
+        EnumSet<Trait> copy = EnumSet.noneOf(Trait.class);
+
+        if (traits != null) {
+            copy.addAll(traits);
         }
-        return EnumSet.copyOf(source);
+
+        return copy;
     }
 
     public Program getProgram() {
@@ -57,11 +42,11 @@ public class ProgramProfile {
     }
 
     public Set<Trait> getCoreTraits() {
-        return Collections.unmodifiableSet(copyTraits(coreTraits));
+        return EnumSet.copyOf(coreTraits);
     }
 
     public Set<Trait> getAlignedTraits() {
-        return Collections.unmodifiableSet(copyTraits(alignedTraits));
+        return EnumSet.copyOf(alignedTraits);
     }
 
     public double getScoreThreshold() {
@@ -70,5 +55,21 @@ public class ProgramProfile {
 
     public int getCapacity() {
         return capacity;
+    }
+
+    public void setCoreTraits(Set<Trait> coreTraits) {
+        this.coreTraits = copyTraits(coreTraits);
+    }
+
+    public void setAlignedTraits(Set<Trait> alignedTraits) {
+        this.alignedTraits = copyTraits(alignedTraits);
+    }
+
+    public void setScoreThreshold(double scoreThreshold) {
+        this.scoreThreshold = scoreThreshold;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 }

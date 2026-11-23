@@ -7,24 +7,17 @@ package model;
 public class ChoiceResult {
 
     private final Program program;
-    private final ChoiceStatus status;
-    private final double matchingScore;
-    private final String message;
+    private ChoiceStatus status;
+    private double matchingScore;
+    private String message;
 
     public ChoiceResult(Program program, ChoiceStatus status,
                         double matchingScore, String message) {
 
-        if (program == null) {
-            throw new IllegalArgumentException("Program cannot be null.");
-        }
-        if (status == null) {
-            throw new IllegalArgumentException("Choice status cannot be null.");
-        }
-
         this.program = program;
         this.status = status;
         this.matchingScore = matchingScore;
-        this.message = message == null ? "" : message;
+        this.message = message;
     }
 
     public Program getProgram() {
@@ -41,5 +34,17 @@ public class ChoiceResult {
 
     public String getMessage() {
         return message;
+    }
+
+    public void setStatus(ChoiceStatus status) {
+        this.status = status;
+    }
+
+    public void setMatchingScore(double matchingScore) {
+        this.matchingScore = matchingScore;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

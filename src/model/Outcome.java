@@ -6,9 +6,9 @@ package model;
  */
 public enum Outcome {
 
-    NOT_EVALUATED("Not Yet Evaluated"),
-    MATCH_FOUND("Matching Program Found"),
-    NO_MATCH_FOUND("No Matching Program Found");
+    NOT_EVALUATED("Not yet evaluated"),
+    MATCH_FOUND("Matching programs found"),
+    NO_MATCH_FOUND("No matching programs found");
 
     private final String description;
 

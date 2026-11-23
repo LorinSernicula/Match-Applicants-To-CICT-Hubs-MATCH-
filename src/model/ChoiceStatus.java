@@ -10,10 +10,10 @@ package model;
  */
 public enum ChoiceStatus {
 
-    NOT_EVALUATED("Not Evaluated"),
+    NOT_EVALUATED("Not evaluated"),
     MATCHED("Matched"),
-    NOT_MATCHED("Not Matched"),
-    NOT_ELIGIBLE("Not Eligible");
+    NOT_MATCHED("Not matched"),
+    NOT_ELIGIBLE("Not eligible");
 
     private final String description;
 

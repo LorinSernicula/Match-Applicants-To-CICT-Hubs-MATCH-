@@ -1,7 +1,6 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /*
@@ -11,63 +10,56 @@ import java.util.List;
  */
 public class MatchResult {
 
-    private final Applicant applicant;
-    private final List<RankedProgram> rankedPrograms;
-    private final List<ChoiceResult> choiceResults;
-    private final Outcome outcome;
+    private Applicant applicant;
+    private List<RankedProgram> rankedPrograms;
+    private List<ChoiceResult> choiceResults;
+    private Outcome outcome;
 
-    public MatchResult(Applicant applicant,
-                       List<RankedProgram> rankedPrograms,
-                       List<ChoiceResult> choiceResults,
-                       Outcome outcome) {
-
-        if (applicant == null) {
-            throw new IllegalArgumentException("Applicant cannot be null.");
-        }
-        if (outcome == null) {
-            throw new IllegalArgumentException("Outcome cannot be null.");
-        }
-
+    public MatchResult(Applicant applicant) {
         this.applicant = applicant;
-        this.rankedPrograms = rankedPrograms == null
-                ? new ArrayList<RankedProgram>()
-                : new ArrayList<RankedProgram>(rankedPrograms);
-        this.choiceResults = choiceResults == null
-                ? new ArrayList<ChoiceResult>()
-                : new ArrayList<ChoiceResult>(choiceResults);
-        this.outcome = outcome;
+        this.rankedPrograms = new ArrayList<>();
+        this.choiceResults = new ArrayList<>();
+        this.outcome = Outcome.NOT_EVALUATED;
     }
 
     public Applicant getApplicant() {
         return applicant;
     }
 
-    /*
-     * returned list preserves the order supplied by MatchingEngine; no sorting
-     */
     public List<RankedProgram> getRankedPrograms() {
-        return Collections.unmodifiableList(
-                new ArrayList<RankedProgram>(rankedPrograms));
+        return new ArrayList<>(rankedPrograms);
     }
 
     public List<ChoiceResult> getChoiceResults() {
-        return Collections.unmodifiableList(
-                new ArrayList<ChoiceResult>(choiceResults));
+        return new ArrayList<>(choiceResults);
     }
 
     public Outcome getOutcome() {
         return outcome;
     }
 
-    public Program getRecommendedProgram() {
+    public void addRankedProgram(RankedProgram rankedProgram) {
+        if (rankedProgram != null) {
+            rankedPrograms.add(rankedProgram);
+        }
+    }
+
+    public void addChoiceResult(ChoiceResult choiceResult) {
+        if (choiceResult != null) {
+            choiceResults.add(choiceResult);
+        }
+    }
+
+    public void setOutcome(Outcome outcome) {
+        this.outcome = outcome;
+    }
+
+    /* Returns the first program in the ranking, if one exists. */
+    public RankedProgram getRecommendedProgram() {
         if (rankedPrograms.isEmpty()) {
             return null;
         }
-        return rankedPrograms.get(0).getProgram();
-    }
 
-    public boolean hasRecommendation() {
-        return outcome == Outcome.MATCH_FOUND
-                && getRecommendedProgram() != null;
+        return rankedPrograms.get(0);
     }
 }

@@ -1,7 +1,6 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -14,33 +13,23 @@ import java.util.Set;
  */
 public class Applicant {
 
-    private final String applicantNumber;
-    private final String lastName;
-    private final String firstName;
-    private final String middleInitial;
+    private String applicantNumber;
+    private String lastName;
+    private String firstName;
+    private String middleInitial;
 
-    private final List<Program> eligiblePrograms;
-    private final Set<Trait> traits;
+    private List<Program> eligiblePrograms;
+    private EnumSet<Trait> traits;
 
     public Applicant(String applicantNumber, String lastName,
                      String firstName, String middleInitial) {
 
-        if (applicantNumber == null || applicantNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("Applicant number cannot be empty.");
-        }
-        if (lastName == null || lastName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Last name cannot be empty.");
-        }
-        if (firstName == null || firstName.trim().isEmpty()) {
-            throw new IllegalArgumentException("First name cannot be empty.");
-        }
+        this.applicantNumber = applicantNumber;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.middleInitial = middleInitial;
 
-        this.applicantNumber = applicantNumber.trim();
-        this.lastName = lastName.trim();
-        this.firstName = firstName.trim();
-        this.middleInitial = middleInitial == null ? "" : middleInitial.trim();
-
-        this.eligiblePrograms = new ArrayList<Program>();
+        this.eligiblePrograms = new ArrayList<>();
         this.traits = EnumSet.noneOf(Trait.class);
     }
 
@@ -60,11 +49,21 @@ public class Applicant {
         return middleInitial;
     }
 
-    public String getFullName() {
-        if (middleInitial.isEmpty()) {
-            return firstName + " " + lastName;
-        }
-        return firstName + " " + middleInitial + ". " + lastName;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setMiddleInitial(String middleInitial) {
+        this.middleInitial = middleInitial;
+    }
+
+    /* Returns a copy so the original list cannot be modified externally. */
+    public List<Program> getEligiblePrograms() {
+        return new ArrayList<>(eligiblePrograms);
     }
 
     public void addEligibleProgram(Program program) {
@@ -77,11 +76,11 @@ public class Applicant {
         eligiblePrograms.remove(program);
     }
 
-    public List<Program> getEligiblePrograms() {
-        return Collections.unmodifiableList(
-                new ArrayList<Program>(eligiblePrograms));
+    public boolean isEligibleFor(Program program) {
+        return eligiblePrograms.contains(program);
     }
 
+    /* Adds or removes traits recorded for the applicant. */
     public void addTrait(Trait trait) {
         if (trait != null) {
             traits.add(trait);
@@ -89,9 +88,7 @@ public class Applicant {
     }
 
     public void removeTrait(Trait trait) {
-        if (trait != null) {
-            traits.remove(trait);
-        }
+        traits.remove(trait);
     }
 
     public boolean hasTrait(Trait trait) {
@@ -99,15 +96,24 @@ public class Applicant {
     }
 
     public Set<Trait> getTraits() {
-        return Collections.unmodifiableSet(EnumSet.copyOf(traits));
+        EnumSet<Trait> copy = EnumSet.noneOf(Trait.class);
+        copy.addAll(traits);
+        return copy;
     }
 
     public void clearTraits() {
         traits.clear();
     }
 
-    @Override
-    public String toString() {
-        return applicantNumber + " - " + getFullName();
+    public String getFullName() {
+        String fullName = firstName;
+
+        if (middleInitial != null && !middleInitial.trim().isEmpty()) {
+            fullName += " " + middleInitial;
+        }
+
+        fullName += " " + lastName;
+
+        return fullName;
     }
 }
