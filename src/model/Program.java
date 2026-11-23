@@ -10,6 +10,7 @@ public class Program {
     private final String code;
     private final String name;
     private final int sectionCount;
+    
 
     public Program(String code, String name, int sectionCount) {
         if (code == null || code.trim().isEmpty()) {
