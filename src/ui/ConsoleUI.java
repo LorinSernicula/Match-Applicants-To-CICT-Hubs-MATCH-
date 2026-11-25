@@ -20,7 +20,7 @@ import java.util.Scanner;
  *
  * Intake flow per applicant:
  *   applicant no. -> last name -> first name -> middle initial
- *   -> trait checklist -> eligible programs -> CICT score -> run matching
+ *   -> trait checklist -> ranked program choices -> CICT score -> run matching
  *
  * This class only collects input and prints output. All matching, ranking
  * and waitlisting is done by MatchingEngine.
@@ -92,17 +92,17 @@ public class ConsoleUI {
         repo.save(applicant);
 
         MatchResult result = engine.process(applicant);
+        repo.saveResult(result);
         printResult(result);
     }
 
     private void viewResult() {
         String number = prompt("Applicant no.: ");
-        Applicant a = repo.findByNumber(number);
-        if (a == null) {
-            System.out.println("No applicant found with number " + number + ".");
+        MatchResult result = repo.getResult(number).orElse(null);
+        if (result == null) {
+            System.out.println("No result found for applicant " + number + ".");
             return;
         }
-        MatchResult result = engine.process(a);
         printResult(result);
     }
 
@@ -143,7 +143,7 @@ public class ConsoleUI {
             }
             if (!validator.isValidApplicantNumber(number)) {
                 System.out.println("Invalid applicant number format.");
-            } else if (repo.findByNumber(number) != null) {
+            } else if (repo.exists(number)) {
                 System.out.println("That applicant number already exists.");
             } else {
                 return number;
@@ -193,7 +193,7 @@ public class ConsoleUI {
     /* Programs the applicant is eligible for / choosing from. At least one is required. */
     private List<Program> askPrograms() {
         Program[] all = Program.values();
-        System.out.println("\nEligible programs (enter numbers separated by commas):");
+        System.out.println("\nPrograms you are applying to, in order of preference (1st choice first, numbers separated by commas):");
         for (int i = 0; i < all.length; i++) {
             System.out.printf("  [%d] %-6s %s%n", i + 1, all[i], all[i].getFullName());
         }
@@ -278,8 +278,8 @@ public class ConsoleUI {
         if (!choices.isEmpty()) {
             System.out.println("\nPer-program result:");
             for (ChoiceResult c : choices) {
-                System.out.printf("  %-6s %-14s %s%n",
-                        c.getProgram(), c.getStatus(),
+                System.out.printf("  %d. %-6s %-38s %s%n",
+                        c.getChoiceNumber(), c.getProgram(), c.getStatus(),
                         c.getMessage() == null ? "" : c.getMessage());
             }
         }

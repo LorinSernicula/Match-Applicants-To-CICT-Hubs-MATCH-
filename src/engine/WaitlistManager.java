@@ -2,7 +2,7 @@ package engine;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,45 +12,37 @@ import model.Applicant;
 import model.Program;
 
 /**
- * Manages one waitlist per {@link Program}.
+ * Manages one waitlist per {@link Program}, each a {@link PriorityQueue}
+ * ordered by {@link ApplicantPriority#INSTANCE} (highest CICT score first,
+ * then applicant number).
  *
- * <p>Each waitlist is a {@link PriorityQueue} ordered by
- * {@code new ApplicantPriority(program)}, so the strongest waitlisted applicant
- * for that program (most trait matches, then highest CICT score, then lowest
- * applicant number) is always at the front.
- *
- * <p>Business rules enforced here:
- * <ul>
- *   <li>An applicant who failed the CICT exam is never added to any waitlist.</li>
- *   <li>An applicant appears at most once in a given program's waitlist
- *       (matched by applicant number).</li>
- * </ul>
- * The caller (MatchingEngine) is responsible for only calling {@link #add}
- * when the applicant qualified for the program but it was full.
+ * <p>An applicant appears at most once in a given program's waitlist
+ * (matched by applicant number). The caller (MatchingEngine) is responsible
+ * for only calling {@link #add} when the applicant passed, qualified for the
+ * program, but it was full.
  */
 public class WaitlistManager {
 
-    /** Returned by {@link #add} when the applicant was rejected (failed exam / null). */
+    /** Returned by {@link #add} when the program or applicant is null. */
     public static final int REJECTED = -1;
 
-    private final Map<Program, PriorityQueue<Applicant>> waitlists = new HashMap<>();
+    private final Map<Program, PriorityQueue<Applicant>> waitlists = new EnumMap<>(Program.class);
 
     /** Creates an empty waitlist for every program. */
     public WaitlistManager() {
         for (Program p : Program.values()) {
-            waitlists.put(p, new PriorityQueue<>(new ApplicantPriority(p)));
+            waitlists.put(p, new PriorityQueue<>(ApplicantPriority.INSTANCE));
         }
     }
 
     /**
      * Adds the applicant to the program's waitlist.
      *
-     * @return the applicant's 1-based position in that waitlist; if they were
-     *         already on it, their current position; {@link #REJECTED} if the
-     *         applicant is null or failed the exam
+     * @return the 1-based position (current position if already on it),
+     *         or {@link #REJECTED} if program or applicant is null
      */
     public int add(Program program, Applicant applicant) {
-        if (program == null || applicant == null || applicant.hasFailedExam()) {
+        if (program == null || applicant == null) {
             return REJECTED;
         }
         if (!contains(program, applicant)) {
@@ -64,30 +56,25 @@ public class WaitlistManager {
         return Optional.ofNullable(waitlists.get(program).peek());
     }
 
-    /**
-     * Removes and returns the highest-priority waitlisted applicant.
-     * Note: this only pops this program's queue; use {@link #promoteNext}
-     * to also take the slot and clean up other waitlists.
-     */
+    /** Removes and returns the top applicant. Only pops this program's queue. */
     public Optional<Applicant> pollNext(Program program) {
         return Optional.ofNullable(waitlists.get(program).poll());
     }
 
     /**
      * Promotes the top waitlisted applicant into the program if a slot is open.
-     * The applicant is admitted in {@link ProgramSlots} and removed from every
-     * waitlist (they now hold a seat). Callers should then update the
-     * applicant's stored result (e.g. in ApplicantRepository).
+     * The applicant is admitted in the given {@link ProgramSlots} (that program's
+     * slots) and removed from every waitlist.
      *
      * @return the promoted applicant, or empty if no slot is open / nobody is waiting
      */
     public Optional<Applicant> promoteNext(Program program, ProgramSlots slots) {
-        while (slots.hasSlot(program)) {
+        while (slots.hasSlot()) {
             Applicant next = waitlists.get(program).poll();
             if (next == null) {
                 return Optional.empty();
             }
-            if (slots.tryAdmit(program, next)) {
+            if (slots.tryAdmit(next)) {
                 removeFromAll(next);
                 return Optional.of(next);
             }
@@ -100,15 +87,11 @@ public class WaitlistManager {
         if (applicant == null) {
             return false;
         }
-        int number = applicant.getApplicantNumber();
-        return waitlists.get(program).removeIf(a -> a.getApplicantNumber() == number);
+        String number = applicant.getApplicantNumber();
+        return waitlists.get(program).removeIf(a -> a.getApplicantNumber().equals(number));
     }
 
-    /**
-     * Removes the applicant from every waitlist (admitted elsewhere or withdrew).
-     *
-     * @return how many waitlists they were removed from
-     */
+    /** Removes the applicant from every waitlist. @return how many they were removed from */
     public int removeFromAll(Applicant applicant) {
         int removed = 0;
         for (Program p : Program.values()) {
@@ -124,9 +107,9 @@ public class WaitlistManager {
         if (applicant == null) {
             return false;
         }
-        int number = applicant.getApplicantNumber();
+        String number = applicant.getApplicantNumber();
         for (Applicant a : waitlists.get(program)) {
-            if (a.getApplicantNumber() == number) {
+            if (a.getApplicantNumber().equals(number)) {
                 return true;
             }
         }
@@ -140,20 +123,17 @@ public class WaitlistManager {
         }
         List<Applicant> ordered = getWaitlist(program);
         for (int i = 0; i < ordered.size(); i++) {
-            if (ordered.get(i).getApplicantNumber() == applicant.getApplicantNumber()) {
+            if (ordered.get(i).getApplicantNumber().equals(applicant.getApplicantNumber())) {
                 return i + 1;
             }
         }
         return 0;
     }
 
-    /**
-     * @return read-only snapshot of the waitlist, highest priority first
-     *         (safe for ConsoleUI to display)
-     */
+    /** @return read-only snapshot of the waitlist, highest priority first */
     public List<Applicant> getWaitlist(Program program) {
         List<Applicant> copy = new ArrayList<>(waitlists.get(program));
-        copy.sort(new ApplicantPriority(program));
+        copy.sort(ApplicantPriority.INSTANCE);
         return Collections.unmodifiableList(copy);
     }
 

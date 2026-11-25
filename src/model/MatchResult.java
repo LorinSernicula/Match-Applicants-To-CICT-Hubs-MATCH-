@@ -10,10 +10,11 @@ import java.util.List;
  */
 public class MatchResult {
 
-    private Applicant applicant;
-    private List<RankedProgram> rankedPrograms;
-    private List<ChoiceResult> choiceResults;
+    private final Applicant applicant;
+    private final List<RankedProgram> rankedPrograms;
+    private final List<ChoiceResult> choiceResults;
     private Outcome outcome;
+    private Program assignedProgram;   // admitted or waitlisted program; null otherwise
 
     public MatchResult(Applicant applicant) {
         this.applicant = applicant;
@@ -38,6 +39,10 @@ public class MatchResult {
         return outcome;
     }
 
+    public Program getAssignedProgram() {
+        return assignedProgram;
+    }
+
     public void addRankedProgram(RankedProgram rankedProgram) {
         if (rankedProgram != null) {
             rankedPrograms.add(rankedProgram);
@@ -52,6 +57,10 @@ public class MatchResult {
 
     public void setOutcome(Outcome outcome) {
         this.outcome = outcome;
+    }
+
+    public void setAssignedProgram(Program assignedProgram) {
+        this.assignedProgram = assignedProgram;
     }
 
     /* Returns the first program in the ranking, if one exists. */

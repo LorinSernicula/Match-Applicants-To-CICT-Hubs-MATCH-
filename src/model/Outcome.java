@@ -2,13 +2,14 @@ package model;
 
 /*
  * represents overall result of an applicant's matching run
- * these are recommendation outcomes, not official admission decisions
  */
 public enum Outcome {
 
     NOT_EVALUATED("Not yet evaluated"),
-    MATCH_FOUND("Matching programs found"),
-    NO_MATCH_FOUND("No matching programs found");
+    ADMITTED("Admitted"),
+    WAITLISTED("Waitlisted"),
+    NOT_ALIGNED("No aligned program among choices"),
+    FAILED("Did not reach the passing score");
 
     private final String description;
 

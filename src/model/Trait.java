@@ -19,7 +19,8 @@ public enum Trait {
     TECH_SUPPORT_MINDED("Tech Support Minded"),
     BUSINESS_MINDED("Business Minded"),
     EXPERIENCE_IN_3D_MODELING("Experience in 3D Modeling"),
-    INTERESTED_IN_ART("Interested in Art");
+    INTERESTED_IN_ART("Interested in Art"),
+    STRONG_ORGANIZATION_SKILLS("Strong Organization Skills");
 
     private final String displayName;
 

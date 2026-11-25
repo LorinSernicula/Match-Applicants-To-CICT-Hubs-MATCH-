@@ -36,12 +36,12 @@ import model.Program;
  */
 public class ApplicantRepository {
 
-    private final Map<Integer, Applicant> applicants = new LinkedHashMap<>();
-    private final Map<Integer, MatchResult> results = new HashMap<>();
-    private final Map<String, Set<Integer>> lastNameIndex = new HashMap<>();
-    private final Map<String, Set<Integer>> fullNameIndex = new HashMap<>();
-    private final Map<Outcome, Set<Integer>> outcomeIndex = new EnumMap<>(Outcome.class);
-    private final TreeSet<Integer> sortedNumbers = new TreeSet<>();
+    private final Map<String, Applicant> applicants = new LinkedHashMap<>();
+    private final Map<String, MatchResult> results = new HashMap<>();
+    private final Map<String, Set<String>> lastNameIndex = new HashMap<>();
+    private final Map<String, Set<String>> fullNameIndex = new HashMap<>();
+    private final Map<Outcome, Set<String>> outcomeIndex = new EnumMap<>(Outcome.class);
+    private final TreeSet<String> sortedNumbers = new TreeSet<>();
 
     public ApplicantRepository() {
         for (Outcome o : Outcome.values()) {
@@ -106,7 +106,7 @@ public class ApplicantRepository {
         }
         Applicant applicant = result.getApplicant();
         save(applicant);
-        int number = applicant.getApplicantNumber();
+        String number = applicant.getApplicantNumber();
         MatchResult previous = results.put(number, result);
         if (previous != null) {
             outcomeIndex.get(previous.getOutcome()).remove(number);
@@ -121,7 +121,7 @@ public class ApplicantRepository {
     }
 
     /** Removes an applicant, their result and all index entries. @return true if removed */
-    public boolean remove(int applicantNumber) {
+    public boolean remove(String applicantNumber) {
         Applicant old = applicants.remove(applicantNumber);
         if (old == null) {
             return false;
@@ -142,7 +142,7 @@ public class ApplicantRepository {
         lastNameIndex.clear();
         fullNameIndex.clear();
         sortedNumbers.clear();
-        for (Set<Integer> s : outcomeIndex.values()) {
+        for (Set<String> s : outcomeIndex.values()) {
             s.clear();
         }
     }
@@ -150,17 +150,17 @@ public class ApplicantRepository {
     // ------------------------------------------------------------------ lookups
 
     /** @return true if an applicant with this number is stored (duplicate check) */
-    public boolean exists(int applicantNumber) {
+    public boolean exists(String applicantNumber) {
         return applicants.containsKey(applicantNumber);
     }
 
     /** Fast primary-key lookup. */
-    public Optional<Applicant> findByNumber(int applicantNumber) {
+    public Optional<Applicant> findByNumber(String applicantNumber) {
         return Optional.ofNullable(applicants.get(applicantNumber));
     }
 
     /** @return the stored match result of the applicant, if matching has been run */
-    public Optional<MatchResult> getResult(int applicantNumber) {
+    public Optional<MatchResult> getResult(String applicantNumber) {
         return Optional.ofNullable(results.get(applicantNumber));
     }
 
@@ -215,18 +215,18 @@ public class ApplicantRepository {
         return findByProgramAndStatus(program, ChoiceStatus.ADMITTED);
     }
 
-    /** @return applicants whose choice for the program has the given status (e.g. WAITLISTED) */
+    /** @return applicants whose choice for the program has the given status (e.g. FULL) */
     public List<Applicant> findByProgramAndStatus(Program program, ChoiceStatus status) {
         List<Applicant> found = new ArrayList<>();
-        for (Map.Entry<Integer, MatchResult> e : results.entrySet()) {
-            for (ChoiceResult c : e.getValue().getChoices()) {
+        for (Map.Entry<String, MatchResult> e : results.entrySet()) {
+            for (ChoiceResult c : e.getValue().getChoiceResults()) {
                 if (c.getProgram() == program && c.getStatus() == status) {
                     found.add(applicants.get(e.getKey()));
                     break;
                 }
             }
         }
-        found.sort((a, b) -> Integer.compare(a.getApplicantNumber(), b.getApplicantNumber()));
+        found.sort((a, b) -> a.getApplicantNumber().compareTo(b.getApplicantNumber()));
         return found;
     }
 
@@ -240,7 +240,7 @@ public class ApplicantRepository {
     /** @return all applicants sorted by applicant number */
     public List<Applicant> getAllSortedByNumber() {
         List<Applicant> list = new ArrayList<>();
-        for (int n : sortedNumbers) {
+        for (String n : sortedNumbers) {
             list.add(applicants.get(n));
         }
         return list;
@@ -255,20 +255,20 @@ public class ApplicantRepository {
                 return c;
             }
             c = normalize(a.getFirstName()).compareTo(normalize(b.getFirstName()));
-            return c != 0 ? c : Integer.compare(a.getApplicantNumber(), b.getApplicantNumber());
+            return c != 0 ? c : a.getApplicantNumber().compareTo(b.getApplicantNumber());
         });
         return list;
     }
 
     /** @return the applicant with the next higher number (for ApplicantNavigator) */
-    public Optional<Applicant> next(int applicantNumber) {
-        Integer n = sortedNumbers.higher(applicantNumber);
+    public Optional<Applicant> next(String applicantNumber) {
+        String n = sortedNumbers.higher(applicantNumber);
         return n == null ? Optional.empty() : Optional.of(applicants.get(n));
     }
 
     /** @return the applicant with the next lower number (for ApplicantNavigator) */
-    public Optional<Applicant> previous(int applicantNumber) {
-        Integer n = sortedNumbers.lower(applicantNumber);
+    public Optional<Applicant> previous(String applicantNumber) {
+        String n = sortedNumbers.lower(applicantNumber);
         return n == null ? Optional.empty() : Optional.of(applicants.get(n));
     }
 
@@ -296,10 +296,10 @@ public class ApplicantRepository {
 
     // ------------------------------------------------------------------ internals
 
-    private List<Applicant> resolve(Set<Integer> numbers) {
+    private List<Applicant> resolve(Set<String> numbers) {
         List<Applicant> list = new ArrayList<>();
         if (numbers != null) {
-            for (int n : numbers) {
+            for (String n : numbers) {
                 list.add(applicants.get(n));
             }
         }
@@ -307,21 +307,21 @@ public class ApplicantRepository {
     }
 
     private void indexNames(Applicant a) {
-        int n = a.getApplicantNumber();
+        String n = a.getApplicantNumber();
         lastNameIndex.computeIfAbsent(normalize(a.getLastName()), k -> new LinkedHashSet<>()).add(n);
         fullNameIndex.computeIfAbsent(firstLast(a), k -> new LinkedHashSet<>()).add(n);
         fullNameIndex.computeIfAbsent(lastFirst(a), k -> new LinkedHashSet<>()).add(n);
     }
 
     private void unindexNames(Applicant a) {
-        int n = a.getApplicantNumber();
+        String n = a.getApplicantNumber();
         removeKey(lastNameIndex, normalize(a.getLastName()), n);
         removeKey(fullNameIndex, firstLast(a), n);
         removeKey(fullNameIndex, lastFirst(a), n);
     }
 
-    private static void removeKey(Map<String, Set<Integer>> index, String key, int number) {
-        Set<Integer> set = index.get(key);
+    private static void removeKey(Map<String, Set<String>> index, String key, String number) {
+        Set<String> set = index.get(key);
         if (set != null) {
             set.remove(number);
             if (set.isEmpty()) {

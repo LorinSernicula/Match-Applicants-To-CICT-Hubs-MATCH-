@@ -1,3 +1,5 @@
+package console;
+
 import config.ProgramConfig;
 import engine.MatchingEngine;
 import engine.WaitlistManager;

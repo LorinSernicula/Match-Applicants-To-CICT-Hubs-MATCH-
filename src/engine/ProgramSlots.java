@@ -45,6 +45,10 @@ public class ProgramSlots {
         return admitted.remove(applicant);
     }
 
+    public boolean hasSlot() {
+    return !isFull();
+    }
+
     public List<Applicant> getAdmitted() {
         List<Applicant> copy = new ArrayList<>(admitted);
         copy.sort(ApplicantPriority.INSTANCE);

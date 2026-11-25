@@ -1,63 +1,73 @@
 package config;
 
-import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
-import java.util.Set;
 import model.Program;
 import model.ProgramProfile;
 import model.Trait;
 
 /*
- * provides initial configuration for CICT programs
+ * provides configuration for CICT programs: profiles, passing score,
+ * minimum trait matches, and scoring weights.
  *
- * program constants are declared in Program.java; this class creates the profiles associated with those programs
- *
- * core traits, aligned traits, score thresholds, and capacities
- * are placeholders until the group finalizes the matching criteria
+ * ALL VALUES BELOW ARE PLACEHOLDERS until the group finalizes the matching criteria.
  */
 public class ProgramConfig {
 
-    private ProgramConfig() {
-        // prevents the creation of unnecessary ProgramConfig objects
+    private static final double PASSING_SCORE = 75.0;
+    private static final int MIN_TRAIT_MATCHES = 3;     // core + aligned traits an applicant must match
+    private static final double CORE_WEIGHT = 2.0;      // each matched core trait
+    private static final double ALIGNED_WEIGHT = 1.0;   // each matched aligned trait
+    private static final int SECTION_SIZE = 40;         // capacity = sectionCount * SECTION_SIZE
+
+    private final Map<Program, ProgramProfile> profiles = new EnumMap<>(Program.class);
+
+    public ProgramConfig() {
+        add(Program.BSCS, 88.0,
+                EnumSet.of(Trait.PROBLEM_SOLVING, Trait.LIKES_PROGRAMMING),
+                EnumSet.of(Trait.ENJOYS_HARDWARE_NETWORKING));
+        add(Program.BSIT, 85.0,
+                EnumSet.of(Trait.ENJOYS_HARDWARE_NETWORKING, Trait.TECH_SUPPORT_MINDED),
+                EnumSet.of(Trait.PROBLEM_SOLVING, Trait.LIKES_PROGRAMMING));
+        add(Program.BSIS, 80.0,
+                EnumSet.of(Trait.BUSINESS_MINDED, Trait.PROBLEM_SOLVING),
+                EnumSet.of(Trait.TECH_SUPPORT_MINDED, Trait.LIKES_PROGRAMMING));
+        add(Program.BLIS, 75.0,
+                EnumSet.of(Trait.STRONG_ORGANIZATION_SKILLS, Trait.BUSINESS_MINDED),
+                EnumSet.of(Trait.PROBLEM_SOLVING));
+        add(Program.BSEMC, 80.0,
+                EnumSet.of(Trait.EXPERIENCE_IN_3D_MODELING, Trait.INTERESTED_IN_ART),
+                EnumSet.of(Trait.LIKES_PROGRAMMING));
     }
 
-    /*
-     * creates a profile for every available CICT program
-     *
-     * empty trait sets and placeholder values are used for now;
-     * REPLACE THEM WHEN THE OFFICIAL MATCHING CRITERIA ARE FINALIZED
-     *
-     * a capacity of -1 means that the capacity is currently unknown
-     */
-    public static Map<Program, ProgramProfile> createDefaultProfiles() {
-
-        Map<Program, ProgramProfile> profiles =
-                new EnumMap<>(Program.class);
-
-        Set<Trait> emptyTraits = Collections.emptySet();
-
-        for (Program program : Program.values()) {
-
-            ProgramProfile profile = new ProgramProfile(
-                    program,
-                    emptyTraits,
-                    emptyTraits,
-                    0.0,
-                    -1
-            );
-
-            profiles.put(program, profile);
-        }
-
-        return profiles;
+    private void add(Program program, double threshold,
+                     EnumSet<Trait> core, EnumSet<Trait> aligned) {
+        int capacity = program.getSectionCount() * SECTION_SIZE;
+        profiles.put(program, new ProgramProfile(program, core, aligned, threshold, capacity));
     }
 
-    /*
-     * returns all available CICT programs
-     * the actual program constants are stored in Program.java
-     */
-    public static Program[] getPrograms() {
+    public ProgramProfile getProfile(Program program) {
+        return profiles.get(program);
+    }
+
+    public double getPassingScore() {
+        return PASSING_SCORE;
+    }
+
+    public int getMinTraitMatches() {
+        return MIN_TRAIT_MATCHES;
+    }
+
+    public double getCoreWeight() {
+        return CORE_WEIGHT;
+    }
+
+    public double getAlignedWeight() {
+        return ALIGNED_WEIGHT;
+    }
+
+    public Program[] getPrograms() {
         return Program.values();
     }
 }
